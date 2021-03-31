@@ -9,8 +9,12 @@ class pwm_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual pwm_if vif;
 
+  // pwm config multi-registers
+  pwm_regs_t pwm_regs;
+
   `uvm_object_utils_begin(pwm_agent_cfg)
   `uvm_object_utils_end
+  
   `uvm_object_new
 
 endclass : pwm_agent_cfg

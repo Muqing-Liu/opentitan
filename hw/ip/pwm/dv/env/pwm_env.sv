@@ -33,7 +33,7 @@ class pwm_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      for (uint i = 0; i < NUM_PWM_CHANNELS; i++) begin
+      for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
         m_pwm_agent.monitor.item_port[i].connect(scoreboard.item_fifo[i].analysis_export);
       end
     end

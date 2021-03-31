@@ -13,18 +13,20 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  localparam NumPwmChannels = pwm_reg_pkg::NOutputs;
+
   wire clk, rst_n;
   wire devmode;
 
   wire clk_core, rst_core_n;
-  wire [pwm_reg_pkg::NOutputs-1:0] pwm;
-  wire [pwm_reg_pkg::NOutputs-1:0] pwm_en;
+  wire [NumPwmChannels-1:0] pwm;
+  wire [NumPwmChannels-1:0] pwm_en;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if clk_rst_core_if(.clk(clk_core), .rst_n(rst_core_n));
   pins_if #(1) devmode_if(devmode);
-  pwm_if #(.NumChannels(pwm_reg_pkg::NOutputs)) pwm_if();
+  pwm_if #(.NumPwmChannels(NumPwmChannels)) pwm_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // dut
@@ -44,8 +46,10 @@ module tb;
 
   assign pwm_if.clk_core   = clk_core;
   assign pwm_if.rst_core_n = rst_core_n;
-  assign pwm_if.pwm        = pwm;
-  assign pwm_if.pwm_en     = pwm_en;
+
+  for (genvar i = 0; i < NumPwmChannels; i++) begin : gen_tri_state
+    bufif1 ts1(pwm_if.pwm[i], pwm[i], pwm_en[i]);
+  end
 
   initial begin
     // drive clk and rst_n from clk_if

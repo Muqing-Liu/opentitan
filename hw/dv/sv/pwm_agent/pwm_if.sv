@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 interface pwm_if #(
-  parameter NumChannels = 6
+  parameter NumPwmChannels = 6
 );
   // core clock
   logic clk_core;
   logic rst_core_n;
 
-  logic [NumChannels-1:0] pwm;
-  logic [NumChannels-1:0] pwm_en;
+  logic [NumPwmChannels-1:0] pwm;
 
 endinterface : pwm_if

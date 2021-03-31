@@ -16,6 +16,8 @@ package pwm_env_pkg;
   import pwm_reg_pkg::*;
   import pwm_ral_pkg::*;
 
+  parameter PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -35,4 +37,4 @@ package pwm_env_pkg;
   `include "pwm_env.sv"
   `include "pwm_vseq_list.sv"
 
-endpackage
+endpackage : pwm_env_pkg

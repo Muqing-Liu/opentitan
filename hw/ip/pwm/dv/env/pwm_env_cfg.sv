@@ -25,7 +25,8 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
     // create m_pwm_agent_cfg
     m_pwm_agent_cfg = pwm_agent_cfg::type_id::create("m_pwm_agent_cfg");
     m_pwm_agent_cfg.if_mode = Device; // setup agent in Device mode
-    m_pwm_agent_cfg.ok_to_end_delay_ns = 8000; // drained time of phase_ready_to_end
+    // drain time of phase ready_to_end_in_ns
+    m_pwm_agent_cfg.ok_to_end_delay_ns = 5000; // drained time of phase_ready_to_end
 
     // create seq_cfg
     seq_cfg = pwm_seq_cfg::type_id::create("seq_cfg");
