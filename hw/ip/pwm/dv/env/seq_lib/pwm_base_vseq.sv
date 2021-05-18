@@ -16,7 +16,7 @@ class pwm_base_vseq extends cip_base_vseq #(
   rand uint          num_pulses;
   rand bit [26:0]    clk_div;
   rand bit [3:0]     dc_resn;
-  // pwm channel configs
+  // pwm registers
   rand pwm_regs_t    pwm_regs;
 
   semaphore key_en_reg     =  new(1);
@@ -76,12 +76,10 @@ class pwm_base_vseq extends cip_base_vseq #(
 
   //================================
   virtual task pre_start();
-    cfg.m_pwm_agent_cfg.en_monitor = cfg.en_scb;
-    `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
-        cfg.en_scb ? "enable" : "disable"), UVM_LOW)
     num_runs.rand_mode(0);
     // unset to disable intr test because pwm does not have intr pins
     do_clear_all_interrupts = 1'b0;
+    cfg.pwm_gen_stop = {PWM_NUM_CHANNELS{1'b1}};
     super.pre_start();
   endtask : pre_start
 
@@ -169,24 +167,24 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : do_phase_align_reset
 
   // functions
-  virtual function void update_agent_config(int channel, bit en_print = 1'b1);
+  virtual function void update_pwm_config(int channel, bit en_print = 1'b1);
     // single regs
-    cfg.m_pwm_agent_cfg.pwm_regs.dc_resn = pwm_regs.dc_resn;
-    cfg.m_pwm_agent_cfg.pwm_regs.clk_div = pwm_regs.clk_div;
+    cfg.pwm_regs.dc_resn = pwm_regs.dc_resn;
+    cfg.pwm_regs.clk_div = pwm_regs.clk_div;
     // multi regs
-    cfg.m_pwm_agent_cfg.pwm_regs.pwm_mode[channel]       = pwm_regs.pwm_mode[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.pwm_num_pulses[channel] = pwm_regs.pwm_num_pulses[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.invert[channel]         = pwm_regs.invert[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.blink_en[channel]       = pwm_regs.blink_en[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.htbt_en[channel]        = pwm_regs.htbt_en[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.phase_delay[channel]    = pwm_regs.phase_delay[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.duty_cycle_a[channel]   = pwm_regs.duty_cycle_a[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.duty_cycle_b[channel]   = pwm_regs.duty_cycle_b[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.blink_param_x[channel]  = pwm_regs.blink_param_x[channel];
-    cfg.m_pwm_agent_cfg.pwm_regs.blink_param_y[channel]  = pwm_regs.blink_param_y[channel];
-    // print agent config
-    print_pwm_regs(cfg.m_pwm_agent_cfg.pwm_regs, channel, en_print);
-  endfunction : update_agent_config
+    cfg.pwm_regs.pwm_mode[channel]       = pwm_regs.pwm_mode[channel];
+    cfg.pwm_regs.pwm_num_pulses[channel] = pwm_regs.pwm_num_pulses[channel];
+    cfg.pwm_regs.invert[channel]         = pwm_regs.invert[channel];
+    cfg.pwm_regs.blink_en[channel]       = pwm_regs.blink_en[channel];
+    cfg.pwm_regs.htbt_en[channel]        = pwm_regs.htbt_en[channel];
+    cfg.pwm_regs.phase_delay[channel]    = pwm_regs.phase_delay[channel];
+    cfg.pwm_regs.duty_cycle_a[channel]   = pwm_regs.duty_cycle_a[channel];
+    cfg.pwm_regs.duty_cycle_b[channel]   = pwm_regs.duty_cycle_b[channel];
+    cfg.pwm_regs.blink_param_x[channel]  = pwm_regs.blink_param_x[channel];
+    cfg.pwm_regs.blink_param_y[channel]  = pwm_regs.blink_param_y[channel];
+    // print pwm config
+    print_pwm_regs(cfg.pwm_regs, channel, en_print);
+  endfunction : update_pwm_config
 
   // set field of reg/mreg using name and index, need to call csr_update after setting
   virtual task set_dv_base_reg_field_by_name(string  csr_name,

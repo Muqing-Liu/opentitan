@@ -4,8 +4,11 @@
 
 class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
 
-  // pwm_agent_cfg
-  rand pwm_agent_cfg m_pwm_agent_cfg;
+  // flag indicates pwm stop
+  bit [PWM_NUM_CHANNELS-1:0] pwm_gen_stop = '0;
+
+  // pwm registers
+  pwm_regs_t  pwm_regs;
 
   // seq_cfg
   pwm_seq_cfg seq_cfg;
@@ -13,20 +16,8 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   // clk_rst_core_if
   virtual clk_rst_if clk_rst_core_vif;
 
-  `uvm_object_utils_begin(pwm_env_cfg)
-    `uvm_field_object(m_pwm_agent_cfg, UVM_DEFAULT)
-  `uvm_object_utils_end
-
-  `uvm_object_new
-
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
-
-    // create m_pwm_agent_cfg
-    m_pwm_agent_cfg = pwm_agent_cfg::type_id::create("m_pwm_agent_cfg");
-    m_pwm_agent_cfg.if_mode = Device; // setup agent in Device mode
-    // drain time of phase ready_to_end_in_ns
-    m_pwm_agent_cfg.ok_to_end_delay_ns = 5000; // drained time of phase_ready_to_end
 
     // create seq_cfg
     seq_cfg = pwm_seq_cfg::type_id::create("seq_cfg");

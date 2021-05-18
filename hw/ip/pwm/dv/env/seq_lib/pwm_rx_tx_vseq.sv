@@ -17,6 +17,7 @@ class pwm_rx_tx_vseq extends pwm_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // program single registers out of the loop
       program_pwm_cfg_reg();
+      cfg.pwm_gen_stop = '0;
       // program multi registers with the loop
       for (int channel = 0; channel < PWM_NUM_CHANNELS; channel++) begin
         fork
@@ -29,8 +30,8 @@ class pwm_rx_tx_vseq extends pwm_base_vseq;
 
   // run pwm channels
   virtual task run_pwm_channel(int channel);
-    // update agent config
-    update_agent_config(channel);
+    // update pwm config
+    update_pwm_config(channel);
     // program pwm channel
     `uvm_info(`gfn, $sformatf("\n  txrx_vseq: disable channel %0d to start config ", channel), UVM_LOW)
     program_pwm_en_regs(Disable, channel);
@@ -42,9 +43,9 @@ class pwm_rx_tx_vseq extends pwm_base_vseq;
   endtask : run_pwm_channel
 
   virtual task stop_pwm_channel(int channel);
-    // update agent config
     cfg.clk_rst_vif.wait_clks(1 << (pwm_regs.pwm_num_pulses[channel] + 1));
     `uvm_info(`gfn, $sformatf("\n  txrx_vseq: stop %od channel", channel), UVM_LOW)
+    cfg.pwm_gen_stop[channel] = 1'b1;
   endtask : stop_pwm_channel
 
   // program pwm mode

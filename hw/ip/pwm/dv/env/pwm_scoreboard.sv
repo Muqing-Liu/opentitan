@@ -13,14 +13,8 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   //****************************************************
   // TODO: This is WiP (clean up later)
   //****************************************************
-  // TLM fifos hold the transactions sent by monitor
-  uvm_tlm_analysis_fifo #(pwm_item) item_fifo[PWM_NUM_CHANNELS];
-
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      item_fifo[i] = new($sformatf("item_fifo[%0d]", i), this);
-    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -87,5 +81,21 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
+
+  // TODO get rid of this and do EOP checks in monitor
+  virtual function void phase_ready_to_end(uvm_phase phase);
+    if (phase.get_name() != "run") return;
+
+    phase.raise_objection(this, "need time to finish last item");
+    fork begin
+      wait_stop_flag();
+      phase.drop_objection(this);
+    end
+    join_none
+  endfunction
+
+  virtual task wait_stop_flag();
+    wait(&cfg.pwm_gen_stop);
+  endtask : wait_stop_flag
 
 endclass : pwm_scoreboard

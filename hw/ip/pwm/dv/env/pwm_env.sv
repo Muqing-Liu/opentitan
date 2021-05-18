@@ -11,15 +11,10 @@ class pwm_env extends cip_base_env #(
   `uvm_component_utils(pwm_env)
   `uvm_component_new
 
-  pwm_agent m_pwm_agent;
-
   function void build_phase(uvm_phase phase);
     int core_clk_freq_mhz;
 
     super.build_phase(phase);
-    m_pwm_agent = pwm_agent::type_id::create("m_pwm_agent", this);
-    uvm_config_db#(pwm_agent_cfg)::set(this, "m_pwm_agent*", "cfg", cfg.m_pwm_agent_cfg);
-    cfg.m_pwm_agent_cfg.en_cov = cfg.en_cov;
 
     // generate core clock (must slower than bus clock)
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_core_vif",
@@ -29,14 +24,5 @@ class pwm_env extends cip_base_env #(
     core_clk_freq_mhz = cfg.get_clk_core_freq(cfg.seq_cfg.pwm_core_clk_ratio);
     cfg.clk_rst_core_vif.set_freq_mhz(core_clk_freq_mhz);
   endfunction : build_phase
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    if (cfg.en_scb) begin
-      for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
-        m_pwm_agent.monitor.item_port[i].connect(scoreboard.item_fifo[i].analysis_export);
-      end
-    end
-  endfunction
 
 endclass : pwm_env
