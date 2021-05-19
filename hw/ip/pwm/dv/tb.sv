@@ -59,7 +59,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_core_vif", clk_rst_core_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual pwm_if)::set(null, "*.env.m_pwm_agent*", "vif", pwm_if);
+    uvm_config_db#(virtual pwm_if)::set(null, "*.env", "pwm_vif", pwm_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

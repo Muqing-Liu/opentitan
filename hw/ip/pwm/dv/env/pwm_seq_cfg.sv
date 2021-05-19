@@ -10,8 +10,8 @@ class pwm_seq_cfg extends uvm_object;
   `uvm_object_new
 
   // knobs for number of requests sent to dut
-  uint pwm_min_num_trans         = 20;
-  uint pwm_max_num_trans         = 30;
+  uint pwm_min_num_trans         = 8;
+  uint pwm_max_num_trans         = 16;
 
   // knobs for number of retry after reset
   // for stress_all, stress_all_with_rand_reset
@@ -20,7 +20,7 @@ class pwm_seq_cfg extends uvm_object;
 
   // knobs for pwm channels
   uint pwm_min_clk_div           = 0;
-  uint pwm_max_clk_div           = 15;
+  uint pwm_max_clk_div           = 16;
   uint pwm_min_dc_resn           = 0;
   uint pwm_max_dc_resn           = 7;
   uint pwm_min_phase_delay       = 0;
@@ -30,8 +30,8 @@ class pwm_seq_cfg extends uvm_object;
   uint pwm_min_duty_cycle        = 0;
   uint pwm_max_duty_cycle        = 15;
 
-  uint pwm_min_num_pulses        =  0;
-  uint pwm_max_num_pulses        = 30;
+  uint pwm_min_num_pulses        =  1;
+  uint pwm_max_num_pulses        = 10;
 
   // ratio (<1) between minimum clk_core (core clock) and clk (bus clock)
   real pwm_core_clk_ratio        = 0.5;

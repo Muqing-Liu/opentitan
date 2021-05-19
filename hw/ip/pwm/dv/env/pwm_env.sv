@@ -16,6 +16,11 @@ class pwm_env extends cip_base_env #(
 
     super.build_phase(phase);
 
+    // check if pwm_vif generated
+    if (!uvm_config_db#(virtual pwm_if)::get(this, "", "pwm_vif", cfg.pwm_vif)) begin
+      `uvm_fatal(`gfn, "failed to get pwm_vif from uvm_config_db")
+    end
+    
     // generate core clock (must slower than bus clock)
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_core_vif",
         cfg.clk_rst_core_vif)) begin

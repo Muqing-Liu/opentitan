@@ -88,14 +88,14 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
     phase.raise_objection(this, "need time to finish last item");
     fork begin
-      wait_stop_flag();
+      wait_stop_all_channels();
       phase.drop_objection(this);
     end
     join_none
   endfunction
 
-  virtual task wait_stop_flag();
-    wait(&cfg.pwm_gen_stop);
-  endtask : wait_stop_flag
+  virtual task wait_stop_all_channels();
+    wait(cfg.pwm_stop_all_channels);
+  endtask : wait_stop_all_channels
 
 endclass : pwm_scoreboard

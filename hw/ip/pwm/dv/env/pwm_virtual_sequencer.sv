@@ -7,8 +7,6 @@ class pwm_virtual_sequencer extends cip_base_virtual_sequencer #(
   .COV_T(pwm_env_cov)
 );
   `uvm_component_utils(pwm_virtual_sequencer)
-
-
   `uvm_component_new
 
 endclass

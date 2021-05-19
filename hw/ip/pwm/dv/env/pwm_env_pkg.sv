@@ -15,16 +15,13 @@ package pwm_env_pkg;
   import pwm_reg_pkg::*;
   import pwm_ral_pkg::*;
 
-  parameter PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
+  parameter uint PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
-
-  // types
-  // local types
   typedef enum int {
     Standard   = 0,
     Blinking   = 1,
@@ -41,22 +38,25 @@ package pwm_env_pkg;
     rand bit [3:0]    dc_resn;
     rand bit [26:0]   clk_div;
     // en reg
-    rand bit          en[PWM_NUM_CHANNELS];
+    rand bit [PWM_NUM_CHANNELS-1:0]         en;
     // invert multireg
-    rand bit          invert[PWM_NUM_CHANNELS];
+    rand bit [PWM_NUM_CHANNELS-1:0]         invert;
     // param multireg
-    rand bit          blink_en[PWM_NUM_CHANNELS];
-    rand bit          htbt_en[PWM_NUM_CHANNELS];
-    rand bit [15:0]   phase_delay[PWM_NUM_CHANNELS];
+    rand bit [PWM_NUM_CHANNELS-1:0]         blink_en;
+    rand bit [PWM_NUM_CHANNELS-1:0]         htbt_en;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   phase_delay;
     // duty_cycle multireg
-    rand bit [15:0]   duty_cycle_a[PWM_NUM_CHANNELS];
-    rand bit [15:0]   duty_cycle_b[PWM_NUM_CHANNELS];
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   duty_cycle_a;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   duty_cycle_b;
     // blink_param multireg
-    rand bit [15:0]   blink_param_x[PWM_NUM_CHANNELS];
-    rand bit [15:0]   blink_param_y[PWM_NUM_CHANNELS];
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   blink_param_x;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   blink_param_y;
     // mode multireg
-    rand pwm_mode_e   pwm_mode[PWM_NUM_CHANNELS];
-    rand int          pwm_num_pulses[PWM_NUM_CHANNELS];
+    rand pwm_mode_e [PWM_NUM_CHANNELS-1:0]  pwm_mode;
+    rand bit [PWM_NUM_CHANNELS-1:0][31:0]   num_pulses;
+    // derived params
+    bit [31:0] beat_period;   // 2^(clk_div+1) core cycles
+    bit [31:0] pulse_period;  // 2^(dc_resn+1)*beat_period core cycles
   } pwm_regs_t;
 
   // functions

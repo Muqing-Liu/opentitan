@@ -19,12 +19,12 @@ class pwm_base_vseq extends cip_base_vseq #(
   // pwm registers
   rand pwm_regs_t    pwm_regs;
 
-  semaphore key_en_reg     =  new(1);
-  semaphore key_invert_reg =  new(1);
+  semaphore          key_prog_regs;
 
   // constraints
   constraint num_trans_c {
-    num_trans inside {[cfg.seq_cfg.pwm_min_num_trans : cfg.seq_cfg.pwm_max_num_trans]};
+    //num_trans inside {[cfg.seq_cfg.pwm_min_num_trans : cfg.seq_cfg.pwm_max_num_trans]};
+    num_trans == 8;
   }
   constraint num_runs_c {
     num_runs inside {[cfg.seq_cfg.pwm_min_num_runs : cfg.seq_cfg.pwm_max_num_runs]};
@@ -68,10 +68,8 @@ class pwm_base_vseq extends cip_base_vseq #(
     foreach (pwm_regs.pwm_mode[i]) {
       pwm_regs.pwm_mode[i] dist {Standard :/ 1, Blinking :/ 0, Heartbeat :/ 0};
     }
-    foreach (pwm_regs.pwm_num_pulses[i]) {
-      pwm_regs.pwm_num_pulses[i] inside {[cfg.seq_cfg.pwm_min_num_pulses :
-                                          cfg.seq_cfg.pwm_max_num_pulses]};
-    }
+    pwm_regs.num_pulses inside {[cfg.seq_cfg.pwm_min_num_pulses :
+                                 cfg.seq_cfg.pwm_max_num_pulses]};
   }
 
   //================================
@@ -79,7 +77,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     num_runs.rand_mode(0);
     // unset to disable intr test because pwm does not have intr pins
     do_clear_all_interrupts = 1'b0;
-    cfg.pwm_gen_stop = {PWM_NUM_CHANNELS{1'b1}};
+    cfg.pwm_stop_all_channels = 1'b0;
+    cfg.pwm_vif.reset();
+    key_prog_regs  = new(1);
     super.pre_start();
   endtask : pre_start
 
@@ -107,18 +107,25 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : program_pwm_cfg_reg
 
   //=== tasks for programming multi registers
-  virtual task program_pwm_en_regs(pwm_status_e status, int channel);
-    key_en_reg.get(1);
-    set_dv_base_reg_field_by_name("pwm_en", "en", pwm_regs.en[channel], channel);
-    `uvm_info(`gfn, $sformatf("\n  base vseq: %s channel %0d",
-        status.name(), channel), UVM_LOW)
-    key_en_reg.put(1);
-  endtask : program_pwm_en_regs
+  virtual task start_pwm_channels();
+    `uvm_info(`gfn, $sformatf("\n  txrx_vseq: start channels (%b)", pwm_regs.en), UVM_LOW)
+    csr_wr(.ptr(ral.pwm_en), .value(pwm_regs.en));
+  endtask : start_pwm_channels
 
-  virtual task program_pwm_invert_regs(int channel);
-    key_invert_reg.get(1);
-    set_dv_base_reg_field_by_name("invert", "invert", pwm_regs.invert[channel], channel);
-    key_invert_reg.put(1);
+  virtual task run_pwm_channels();
+    uint runtime;
+
+    runtime = pwm_regs.num_pulses * pwm_regs.pulse_period;
+    `DV_CHECK_NE(runtime, 0)
+    cfg.clk_rst_vif.wait_clks(runtime);
+    csr_wr(.ptr(ral.pwm_en), .value({PWM_NUM_CHANNELS{1'b0}}));
+    `uvm_info(`gfn, $sformatf("\n  txrx_vseq: stop channels after %0d cycles", runtime), UVM_LOW)
+  endtask : run_pwm_channels
+
+  virtual task program_pwm_invert_regs();
+    for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
+      set_dv_base_reg_field_by_name("invert", "invert", pwm_regs.invert[i], i);
+    end
   endtask : program_pwm_invert_regs
 
   virtual task program_pwm_duty_cycle_regs(int channel);
@@ -167,23 +174,33 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : do_phase_align_reset
 
   // functions
-  virtual function void update_pwm_config(int channel, bit en_print = 1'b1);
+  virtual function void update_pwm_config(bit en_print = 1'b0);
+    // derived params
+    pwm_regs.beat_period  = pwm_regs.clk_div + 1;
+    pwm_regs.pulse_period = (1 << (pwm_regs.dc_resn + 1)) * pwm_regs.beat_period;
+
+    cfg.pwm_vif.pwm_regs.beat_period  = pwm_regs.beat_period;
+    cfg.pwm_vif.pwm_regs.pulse_period = pwm_regs.pulse_period;
+    cfg.pwm_vif.pwm_regs.num_pulses   = pwm_regs.num_pulses;
     // single regs
-    cfg.pwm_regs.dc_resn = pwm_regs.dc_resn;
-    cfg.pwm_regs.clk_div = pwm_regs.clk_div;
-    // multi regs
-    cfg.pwm_regs.pwm_mode[channel]       = pwm_regs.pwm_mode[channel];
-    cfg.pwm_regs.pwm_num_pulses[channel] = pwm_regs.pwm_num_pulses[channel];
-    cfg.pwm_regs.invert[channel]         = pwm_regs.invert[channel];
-    cfg.pwm_regs.blink_en[channel]       = pwm_regs.blink_en[channel];
-    cfg.pwm_regs.htbt_en[channel]        = pwm_regs.htbt_en[channel];
-    cfg.pwm_regs.phase_delay[channel]    = pwm_regs.phase_delay[channel];
-    cfg.pwm_regs.duty_cycle_a[channel]   = pwm_regs.duty_cycle_a[channel];
-    cfg.pwm_regs.duty_cycle_b[channel]   = pwm_regs.duty_cycle_b[channel];
-    cfg.pwm_regs.blink_param_x[channel]  = pwm_regs.blink_param_x[channel];
-    cfg.pwm_regs.blink_param_y[channel]  = pwm_regs.blink_param_y[channel];
-    // print pwm config
-    print_pwm_regs(cfg.pwm_regs, channel, en_print);
+    cfg.pwm_vif.pwm_regs.dc_resn = pwm_regs.dc_resn;
+    cfg.pwm_vif.pwm_regs.clk_div = pwm_regs.clk_div;
+    for (int channel = 0; channel < PWM_NUM_CHANNELS; channel++) begin
+      // multi regs
+      cfg.pwm_vif.pwm_regs.en[channel]            = pwm_regs.en[channel];
+      cfg.pwm_vif.pwm_regs.pwm_mode[channel]      = pwm_regs.pwm_mode[channel];
+      cfg.pwm_vif.pwm_regs.invert[channel]        = pwm_regs.invert[channel];
+      cfg.pwm_vif.pwm_regs.blink_en[channel]      = pwm_regs.blink_en[channel];
+      cfg.pwm_vif.pwm_regs.htbt_en[channel]       = pwm_regs.htbt_en[channel];
+      cfg.pwm_vif.pwm_regs.phase_delay[channel]   = pwm_regs.phase_delay[channel];
+      cfg.pwm_vif.pwm_regs.duty_cycle_a[channel]  = pwm_regs.duty_cycle_a[channel];
+      cfg.pwm_vif.pwm_regs.duty_cycle_b[channel]  = pwm_regs.duty_cycle_b[channel];
+      cfg.pwm_vif.pwm_regs.blink_param_x[channel] = pwm_regs.blink_param_x[channel];
+      cfg.pwm_vif.pwm_regs.blink_param_y[channel] = pwm_regs.blink_param_y[channel];
+      // print pwm config
+      cfg.print_pwm_regs(cfg.pwm_vif.pwm_regs, channel, en_print);
+    end
+    `uvm_info(`gfn, "\n  base_vseq: update pwm_vif", UVM_LOW)
   endfunction : update_pwm_config
 
   // set field of reg/mreg using name and index, need to call csr_update after setting
@@ -205,23 +222,6 @@ class pwm_base_vseq extends cip_base_vseq #(
     if (update) csr_update(base_reg);
   endtask : set_dv_base_reg_field_by_name
 
-  virtual function void print_pwm_regs(pwm_regs_t regs, int channel, bit en_print = 1'b1);
-    if (en_print) begin
-      string str;
-      str = $sformatf("\n>>> Channel %0d configuration", channel);
-      str = {str, $sformatf("\n  pwm_mode        %s",  regs.pwm_mode[channel].name())};
-      str = {str, $sformatf("\n  invert          %b",  regs.invert[channel])};
-      str = {str, $sformatf("\n  clk_div         %0d", regs.clk_div[channel])};
-      str = {str, $sformatf("\n  dc_resn         %0d", regs.dc_resn[channel])};
-      str = {str, $sformatf("\n  phase_delay     %0d", regs.phase_delay[channel])};
-      str = {str, $sformatf("\n  duty_cycle_A    %0d", regs.duty_cycle_a[channel])};
-      str = {str, $sformatf("\n  duty_cycle_B    %0d", regs.duty_cycle_b[channel])};
-      str = {str, $sformatf("\n  blink_param_X   %0d", regs.blink_param_x[channel])};
-      str = {str, $sformatf("\n  blink_param_Y   %0d", regs.blink_param_y[channel])};
-      `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
-    end
-  endfunction : print_pwm_regs
-  
   // set reg/mreg using name and index
   virtual function dv_base_reg get_dv_base_reg_by_name(string csr_name,
                                                        int    csr_idx = -1);
