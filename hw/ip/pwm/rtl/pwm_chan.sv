@@ -49,6 +49,6 @@ module pwm_chan (
                     phase_wrap ? on_phase_exceeded | ~off_phase_exceeded :
                                  on_phase_exceeded & ~off_phase_exceeded;
 
-   assign pwm_o = invert_i ? ~pwm_int : pwm_int;
+   assign pwm_o = invert_i&pwm_en_i ? ~pwm_int : pwm_int;
 
 endmodule : pwm_chan
