@@ -45,7 +45,7 @@ module pwm_chan (
    assign off_phase_exceeded = (phase_ctr_i >= off_phase);
 
 
-   assign pwm_int = pwm_en_i   ? 1'b0 :
+   assign pwm_int = ~pwm_en_i   ? 1'b0 :
                     phase_wrap ? on_phase_exceeded | ~off_phase_exceeded :
                                  on_phase_exceeded & ~off_phase_exceeded;
 

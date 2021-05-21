@@ -36,7 +36,7 @@ module pwm #(
     .devmode_i  (1'b1)
   );
 
-  assign cio_pwm_en_o = {NOutputs{1'b1}};
+  assign cio_pwm_en_o = reg2hw.pwm_en;//{NOutputs{1'b1}};
 
   pwm_core #(.NOutputs(NOutputs)) u_pwm_core (
     .clk_core_i,
