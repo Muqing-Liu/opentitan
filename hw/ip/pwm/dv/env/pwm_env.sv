@@ -19,6 +19,12 @@ class pwm_env extends cip_base_env #(
     // instantiate pwm_monitor
     m_pwm_monitor = pwm_monitor#(PWM_NUM_CHANNELS)::type_id::create("m_pwm_monitor", this);
     m_pwm_monitor.cfg = cfg.m_pwm_monitor_cfg;
+    m_pwm_monitor.cov = cov;
+    // get vif handle
+    if (!uvm_config_db#(virtual pwm_if#(PWM_NUM_CHANNELS))::
+        get(this, "", "pwm_vif", cfg.pwm_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get pwm_vif from uvm_config_db")
+    end
 
     // generate core clock (must slower than bus clock)
     if (!uvm_config_db#(virtual clk_rst_if)
