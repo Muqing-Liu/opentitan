@@ -152,7 +152,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     program_configopt_regs();
     program_control_reg();
     program_csid_reg();
-    wait_ready_for_command();
+   
   
    // update_spi_agent_regs();
   endtask : program_spi_host_regs
