@@ -212,9 +212,13 @@ class spi_monitor extends dv_base_monitor#(
   endtask : send_device_item_to_scb
 
   virtual task monitor_ready_to_end();
+    ok_to_end = 0;
     forever begin
-      @(cfg.vif.csb);
-      ok_to_end = &cfg.vif.csb;
+      @(cfg.vif.csb[0]);
+//      ok_to_end = &cfg.vif.csb;
+        ok_to_end = cfg.vif.csb[0];
+      if(ok_to_end)  #1us;
+      `uvm_info("MONITOR", $sformatf("ok to end %b", ok_to_end), UVM_LOW)
     end
   endtask : monitor_ready_to_end
 

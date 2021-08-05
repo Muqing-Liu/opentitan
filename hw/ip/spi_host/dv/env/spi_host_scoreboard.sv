@@ -61,12 +61,13 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     spi_item   dut_item;
 
     forever begin
+      `uvm_info("SPI_HOST", $sformatf("SC_0"), UVM_LOW)
       if (mode == Host) begin
         host_data_fifo.get(dut_item);
-        //`uvm_info(`gfn, $sformatf("\n  scb: dut_item \n%0s", dut_item.sprint()), UVM_DEBUG)
+        `uvm_info("SPI_HOST", $sformatf("\n got item scb: dut_item \n%0s", dut_item.sprint()), UVM_DEBUG)
         wait(host_item_q.size() > 0);
         exp_item = host_item_q.pop_front();
-        //`uvm_info(`gfn, $sformatf("\n  scb: exp_item \n%0s", exp_item.sprint()), UVM_DEBUG)
+        `uvm_info("SPI_HOST", $sformatf("\n GOT ITEM scb: exp_item \n%0s", exp_item.sprint()), UVM_DEBUG)
       end else begin
         device_data_fifo.get(dut_item);
         wait(device_item_q.size() > 0);

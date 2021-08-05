@@ -17,23 +17,19 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     spi_host_regs.csaat = 0;
     spi_host_regs.csid = 0;
     //fork
-    `uvm_info("SPI_DBG", $sformatf("REACHED!!!!"), UVM_LOW)
     //start_spi_agent_seq();
-    `uvm_info("SPI_DBG", $sformatf("REACHED 1!!!!"), UVM_LOW)
     program_spi_host_regs();
-    `uvm_info("SPI_DBG", $sformatf("REACHED 2!!!!"), UVM_LOW)    
-    `uvm_info("SPI_DBG", $sformatf("REACHED 3!!!!"), UVM_LOW)
-    wait_ready_for_command();
     wait_ready_for_command();
     csr_rd(.ptr(ral.status), .value(status));
     `uvm_info(`gfn, $sformatf("status is %b", status.active), UVM_LOW)
-    write_spi_command(32'h00112233);
-    write_spi_command(32'h44556677);
-    write_spi_command(32'h8899aabb);
-    write_spi_command(32'hccddeeff);
-      program_command_reg();
-    `uvm_info("SPI_DBG", $sformatf("REACHED END!!!!"), UVM_LOW)
-    //      send_tx_trans();
+   // write_spi_command(32'h00112233);
+   // write_spi_command(32'h44556677);
+   // write_spi_command(32'h8899aabb);
+   // write_spi_command(32'hccddeeff);
+   // program_command_reg();
+
+      send_tx_trans();
+     `uvm_info("SPI_DBG", $sformatf("REACHED END!!!!"), UVM_LOW)
     //      send_rx_trans();
     // join
     // wait for all accesses to complete
@@ -51,7 +47,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
       bit [TL_DW-1:0] wr_word;
       bit [TL_AW-1:0] wr_align_addr = get_aligned_tl_addr();
 
-      // iterate through the data_q and pop off words to write to tx_fifo
+      // randomize data and iterate through the data_q and pop off words to write to tx_fifo
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(data_q,
                                             data_q.size() == spi_host_regs.len + 1;)
       `uvm_info(`gfn, $sformatf("\n  rxtx_vseq, write %0d bytes %p",
@@ -66,8 +62,8 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
           byte_len++;
         end
         if (byte_len > 0) begin
-          `uvm_info(`gfn, $sformatf("\n  rxtx_vseq, write %0d bytes 0x%8x to tx_fifo",
-              byte_len, wr_word), UVM_DEBUG)
+          `uvm_info("SPI_HOST", $sformatf("\n  rxtx_vseq, write %0d bytes 0x%8x to tx_fifo",
+              byte_len, wr_word), UVM_LOW)
           spi_host_atomic.get(1);
           wait_for_fifos_available(TxFifo);
           send_tl_access(.addr(wr_align_addr), .data(wr_word), .write(1'b1), .blocking(1'b1));
@@ -76,6 +72,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
           cfg.clk_rst_vif.wait_clks(tx_fifo_access_dly);
         end
       end
+      program_command_reg();
     end
   endtask : send_tx_trans
 

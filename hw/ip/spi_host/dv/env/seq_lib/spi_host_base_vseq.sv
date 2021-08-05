@@ -100,9 +100,9 @@ class spi_host_base_vseq extends cip_base_vseq #(
       // TODO: temporaly forcing direction to TxOnly due to bugs in the read path of rtl
       if (spi_host_regs.speed == Standard) {
         spi_host_regs.direction dist {
-          Dummy  :/ 1,
-          Bidir  :/ 4,
-          TxOnly :/ 0,
+          Dummy  :/ 0,
+          Bidir  :/ 0,
+          TxOnly :/ 1,
           RxOnly :/ 0
         };
       } else {
