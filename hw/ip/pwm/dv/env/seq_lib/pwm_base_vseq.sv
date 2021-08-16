@@ -46,9 +46,9 @@ class pwm_base_vseq extends cip_base_vseq #(
         pwm_regs.pwm_mode[i] == cfg.seq_cfg.pwm_run_mode;
       }
     }
-    foreach (pwm_regs.blink_en[i]) {pwm_regs.blink_en[i] == (pwm_regs.pwm_mode[i] != Standard);}
+    /*foreach (pwm_regs.blink_en[i]) {pwm_regs.blink_en[i] == (pwm_regs.pwm_mode[i] != Standard);}
     foreach (pwm_regs.htbt_en[i]) {pwm_regs.htbt_en[i] == (pwm_regs.pwm_mode[i] == Heartbeat);}
-    pwm_regs.pwm_en inside {[1 : (1 << cfg.seq_cfg.pwm_run_channel) - 1]};
+    pwm_regs.pwm_en inside {[1 : (1 << cfg.seq_cfg.pwm_run_channel) - 1]};*/
     foreach (pwm_regs.invert[i]) {
       if (pwm_regs.pwm_en[i]) {
         pwm_regs.invert[i] dist {
@@ -100,7 +100,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     program_pwm_enb_regs(Enable);
     program_pwm_inv_regs(Enable);
     program_pwm_cnt_regs(Enable);
-    cfg.m_pwm_monitor_cfg.print_pwm_monitor_cfg(.en_print(1'b0));
+    //cfg.m_pwm_monitor_cfg.print_pwm_monitor_cfg(.en_print(1'b0));
+    update_pwm_monitor_cfg();
+    `uvm_info(`gfn, cfg.m_pwm_monitor_cfg.convert2string(), UVM_LOW)
     `uvm_info(`gfn, $sformatf("\n  base_vseq: start channels (%b)", pwm_regs.pwm_en), UVM_DEBUG)
   endtask : start_pwm_channels
 
@@ -159,7 +161,7 @@ class pwm_base_vseq extends cip_base_vseq #(
     end
     csr_spinwait(.ptr(ral.pwm_en), .exp_data(pwm_regs.pwm_en));
     cfg.m_pwm_monitor_cfg.pwm_en = pwm_regs.pwm_en;
-    `uvm_info(`gfn, $sformatf("\n  base_vseq: %pwm_en %b", pwm_regs.pwm_en), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\n  base_vseq: pwm_en %b", pwm_regs.pwm_en), UVM_DEBUG)
   endtask : program_pwm_enb_regs
 
   virtual task program_pwm_inv_regs(pwm_status_e status = Enable);
@@ -175,9 +177,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     dv_base_reg base_reg = get_dv_base_reg_by_name("duty_cycle", channel);
     // set reg fields but not update
     set_dv_base_reg_field_by_name("duty_cycle", "a", pwm_regs.duty_cycle_a[channel], channel,
-                                  channel, 1'b0);
+                                  -1, 1'b0);
     set_dv_base_reg_field_by_name("duty_cycle", "b", pwm_regs.duty_cycle_b[channel], channel,
-                                  channel, 1'b0);
+                                  -1, 1'b0);
     // update fields in same cycle
     csr_update(base_reg);
   endtask : program_pwm_duty_cycle_regs

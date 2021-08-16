@@ -91,9 +91,9 @@ class pwm_scoreboard extends cip_base_scoreboard #(
         "pwm_param_0", "pwm_param_1", "pwm_param_2",
         "pwm_param_3", "pwm_param_4", "pwm_param_5": begin
           int channel = get_reg_index(csr_name, 10);
-          pwm_regs.blink_en[channel] = bit'(get_field_val(ral.pwm_param_0.blink_en_0, item.a_data));
-          pwm_regs.htbt_en[channel] = bit'(get_field_val(ral.pwm_param_0.htbt_en_0, item.a_data));
-          pwm_regs.phase_delay[channel] = get_field_val(ral.pwm_param_0.phase_delay_0, item.a_data);
+          pwm_regs.blink_en[channel] = bit'(get_field_val(ral.pwm_param[0].blink_en, item.a_data));
+          pwm_regs.htbt_en[channel] = bit'(get_field_val(ral.pwm_param[0].htbt_en, item.a_data));
+          pwm_regs.phase_delay[channel] = get_field_val(ral.pwm_param[0].phase_delay, item.a_data);
           pwm_regs.pwm_mode[channel] = get_pwm_mode({pwm_regs.blink_en[channel],
                                                      pwm_regs.htbt_en[channel]});
           `uvm_info(`gfn, $sformatf("\n  scb: channel %0d, data %b, pwm_mode %s, phase_delay %0d",

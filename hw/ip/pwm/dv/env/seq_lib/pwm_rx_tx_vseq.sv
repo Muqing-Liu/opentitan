@@ -44,24 +44,24 @@ class pwm_rx_tx_vseq extends pwm_base_vseq;
         case (pwm_regs.pwm_mode[channel])
           Blinking: begin
             // enable blink_en, disable htbt_en in same cycle
-            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Enable,  channel, channel, 1'b0);
-            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Disable, channel, channel, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Enable,  channel, -1, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Disable, channel, -1, 1'b0);
           end
           Heartbeat: begin
             // enable both blink_en and htbt_en in same cycle
-            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Enable, channel, channel, 1'b0);
-            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Enable, channel, channel, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Enable, channel, -1, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Enable, channel, -1, 1'b0);
             csr_update(base_reg);
           end
           Standard: begin
             // disable both blink_en and htbt_en in same cycle
-            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Disable, channel, channel, 1'b0);
-            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Disable, channel, channel, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "blink_en", Disable, channel, -1, 1'b0);
+            set_dv_base_reg_field_by_name("pwm_param", "htbt_en",  Disable, channel, -1, 1'b0);
           end
         endcase
         // program phase delay
         set_dv_base_reg_field_by_name("pwm_param", "phase_delay",
-            pwm_regs.phase_delay[channel], channel, channel, 1'b0);
+            pwm_regs.phase_delay[channel], channel, -1, 1'b0);
         // update pwm_param register
         csr_update(base_reg);
         `uvm_info(`gfn, $sformatf("\n  rxtx_vseq: update pwm_mode_regs[%0d]", channel), UVM_DEBUG)
